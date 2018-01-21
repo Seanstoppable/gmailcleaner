@@ -1,0 +1,11 @@
+---
+rules:
+  #archive all emails older than 7 days to foo@bar.com
+  - query:
+      labels:
+        - "INBOX"
+      to: "foo@bar.com"
+      olderthandays: 7
+    modifications:
+      removelabels:
+        - "INBOX"
