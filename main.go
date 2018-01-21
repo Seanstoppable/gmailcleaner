@@ -151,23 +151,20 @@ func main() {
 			log.Printf("%s %v", m.Snippet, m.LabelIds)
 		}
 
-		/*
-			if len(rule.Modifications.AddLabels) > 0 && len(rule.Modifications.RemoveLabels) > 0 {
+		if len(rule.Modifications.AddLabels) > 0 || len(rule.Modifications.RemoveLabels) > 0 {
 
-				modificationRequest := &gmail.ModifyMessageRequest{
-					AddLabelIds:    rule.Modifications.AddLabels,
-					RemoveLabelIds: rule.Modifications.RemoveLabels,
-				}
+			modificationRequest := &gmail.ModifyMessageRequest{
+				AddLabelIds:    rule.Modifications.AddLabels,
+				RemoveLabelIds: rule.Modifications.RemoveLabels,
+			}
 
-				for _, m := range msgs {
-					archiveReq := srv.Users.Messages.Modify("me", m.Id, modificationRequest)
-					_, err := archiveReq.Do()
-					if err != nil {
-						log.Fatalf("Unable to archive messages: %v", err)
-					}
+			for _, m := range msgs {
+				archiveReq := srv.Users.Messages.Modify("me", m.Id, modificationRequest)
+				_, err := archiveReq.Do()
+				if err != nil {
+					log.Fatalf("Unable to archive messages: %v", err)
 				}
 			}
-		*/
-
+		}
 	}
 }
