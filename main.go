@@ -11,6 +11,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	rules "github.com/Seanstoppable/gmailcleaner/rules"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -36,7 +37,7 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 // It returns the retrieved Token.
 func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
+	log.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
 	var code string
@@ -80,7 +81,7 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 // saveToken uses a file path to create a file and store the
 // token in it.
 func saveToken(file string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", file)
+	log.Printf("Saving credential file to: %s\n", file)
 	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
@@ -116,52 +117,69 @@ func main() {
 		log.Fatalf("Unable to retrieve labels. %v", err)
 	}
 	if len(r.Labels) > 0 {
-		fmt.Print("Labels:\n")
+		log.Print("Labels:\n")
 		for _, l := range r.Labels {
-			fmt.Printf("- %s\n", l.Name)
+			log.Printf("- %s\n", l.Name)
 		}
 	} else {
-		fmt.Print("No labels found.")
+		log.Print("No labels found.")
 	}
 
-	msgs := []*gmail.Message{}
-	pageToken := ""
-	for {
-		req := srv.Users.Messages.List("me").Q("in:inbox to:tor@crazyorgenius.com")
-		if pageToken != "" {
-			req.PageToken(pageToken)
-		}
-		r, err := req.Do()
-		if err != nil {
-			log.Fatalf("Unable to retrieve messages: %v", err)
-		}
+	rules, err := rules.LoadRules()
 
-		log.Printf("Processing %v messages...\n", len(r.Messages))
-		for _, m := range r.Messages {
-			msg, err := srv.Users.Messages.Get("me", m.Id).Do()
-			if err != nil {
-				log.Fatalf("Unable to retrieve message %v: %v", m.Id, err)
+	if err != nil {
+		log.Fatalf("Unable to load config %v", err)
+	}
+
+	for _, rule := range rules {
+		query := rule.Query.CreateQuery()
+
+		msgs := []*gmail.Message{}
+		pageToken := ""
+		for {
+			req := srv.Users.Messages.List("me").Q(query)
+			if pageToken != "" {
+				req.PageToken(pageToken)
 			}
-			msgs = append(msgs, msg)
-		}
+			r, err := req.Do()
+			if err != nil {
+				log.Fatalf("Unable to retrieve messages: %v", err)
+			}
 
-		removeInboxLabelRequest := &gmail.ModifyMessageRequest{
-			RemoveLabelIds: []string{"INBOX"},
+			log.Printf("Processing %v messages...\n", len(r.Messages))
+			for _, m := range r.Messages {
+				msg, err := srv.Users.Messages.Get("me", m.Id).Do()
+				if err != nil {
+					log.Fatalf("Unable to retrieve message %v: %v", m.Id, err)
+				}
+				msgs = append(msgs, msg)
+			}
+			if r.NextPageToken == "" {
+				break
+			}
+			pageToken = r.NextPageToken
 		}
-
 		for _, m := range msgs {
-			fmt.Println(fmt.Sprintf("%s %v", m.Snippet, m.LabelIds))
-			archiveReq := srv.Users.Messages.Modify("me", m.Id, removeInboxLabelRequest)
-			_, err := archiveReq.Do()
-			if err != nil {
-				log.Fatalf("Unable to archive messages: %v", err)
+			log.Printf("%s %v", m.Snippet, m.LabelIds)
+		}
+
+		/*
+			if len(rule.Modifications.AddLabels) > 0 && len(rule.Modifications.RemoveLabels) > 0 {
+
+				modificationRequest := &gmail.ModifyMessageRequest{
+					AddLabelIds:    rule.Modifications.AddLabels,
+					RemoveLabelIds: rule.Modifications.RemoveLabels,
+				}
+
+				for _, m := range msgs {
+					archiveReq := srv.Users.Messages.Modify("me", m.Id, modificationRequest)
+					_, err := archiveReq.Do()
+					if err != nil {
+						log.Fatalf("Unable to archive messages: %v", err)
+					}
+				}
 			}
-		}
+		*/
 
-		if r.NextPageToken == "" {
-			break
-		}
-		pageToken = r.NextPageToken
 	}
-
 }
