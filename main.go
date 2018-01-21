@@ -112,18 +112,6 @@ func main() {
 	}
 
 	user := "me"
-	r, err := srv.Users.Labels.List(user).Do()
-	if err != nil {
-		log.Fatalf("Unable to retrieve labels. %v", err)
-	}
-	if len(r.Labels) > 0 {
-		log.Print("Labels:\n")
-		for _, l := range r.Labels {
-			log.Printf("- %s\n", l.Name)
-		}
-	} else {
-		log.Print("No labels found.")
-	}
 
 	rules, err := rules.LoadRules()
 
@@ -137,7 +125,7 @@ func main() {
 		msgs := []*gmail.Message{}
 		pageToken := ""
 		for {
-			req := srv.Users.Messages.List("me").Q(query)
+			req := srv.Users.Messages.List(user).Q(query)
 			if pageToken != "" {
 				req.PageToken(pageToken)
 			}
