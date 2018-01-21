@@ -9,3 +9,9 @@ mail, and/or eventually apply other labels via rules.
 
 Why not just use Gmail's filters? Gmail doesn't provide time based filters, it
 only does filtering on new email ingestion.
+
+## Setup
+
+Note, you will have to follow the setup in the [go
+quickstart](https://developers.google.com/gmail/api/quickstart/go) to set up
+developer access and configure oauth
