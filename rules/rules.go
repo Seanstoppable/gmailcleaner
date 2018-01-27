@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -36,7 +37,11 @@ func (term SearchTerms) CreateQuery() string {
 	if term.From != "" {
 		resultArr = append(resultArr, fmt.Sprintf("from:%s", term.From))
 	}
-	//TODO date stuff
+	if term.OlderThanDays > 0 {
+		t := time.Now()
+		t = t.AddDate(0, 0, -term.OlderThanDays)
+		resultArr = append(resultArr, fmt.Sprintf("before:%d/%d/%d", t.Year(), t.Month(), t.Day()))
+	}
 
 	return strings.Join(resultArr, " ")
 }
