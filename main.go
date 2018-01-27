@@ -134,7 +134,7 @@ func main() {
 				log.Fatalf("Unable to retrieve messages: %v", err)
 			}
 
-			log.Printf("Processing %v messages...\n", len(r.Messages))
+			log.Printf("Processing %v messages for query %s\n", len(r.Messages), query)
 			for _, m := range r.Messages {
 				msg, err := srv.Users.Messages.Get("me", m.Id).Do()
 				if err != nil {
