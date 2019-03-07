@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -54,7 +55,7 @@ func LoadRules() ([]Rule, error) {
 
 	config := config{}
 
-	data, err := ioutil.ReadFile("rules.yml")
+	data, err := ioutil.ReadFile(os.Getenv("HOME") + "/.config/gmailcleaner/rules.yml")
 	if err != nil {
 		return nil, err
 	}
