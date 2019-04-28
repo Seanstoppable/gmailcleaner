@@ -70,10 +70,10 @@ func tokenCacheFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
+	tokenCacheDir := filepath.Join(usr.HomeDir, ".config/gmailcleaner")
 	os.MkdirAll(tokenCacheDir, 0700)
 	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("gmail-go-quickstart.json")), err
+		url.QueryEscape("gmailcleaner-creds.json")), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.
