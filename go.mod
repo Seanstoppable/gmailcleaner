@@ -9,5 +9,5 @@ require (
 	golang.org/x/oauth2 v0.0.0-20180118004544-b28fcf2b08a1
 	google.golang.org/api v0.0.0-20180121000330-85dbeadc18ff
 	google.golang.org/appengine v0.0.0-20171212223047-5bee14b453b4 // indirect
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.4.0
 )
